@@ -3,7 +3,7 @@ name: Deploy to Vercel
 on:
   push:
     branches:
-      - main # or master
+      - main # Change this to your default branch name
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.9" # or your Python version
+          python-version: "3.9" # Change this to the Python version you need
 
       - name: Install dependencies
         run: |
@@ -28,6 +28,4 @@ jobs:
           vercel_token: ${{ secrets.VERCEL_TOKEN }}
           vercel_org_id: ${{ secrets.VERCEL_ORG_ID }}
           vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel_branch: main # or master
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          vercel_branch: main # Change this if needed
