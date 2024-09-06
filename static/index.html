@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Prediction</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            width: calc(100% - 22px);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>House Price Prediction</h1>
+        <p>Enter the size of the house in square feet:</p>
+        <input type="number" id="houseSize" placeholder="House Size in sq ft">
+        <button onclick="predictPrice()">Predict Price</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        async function predictPrice() {
+            const size = document.getElementById('houseSize').value;
+            
+            if (!size) {
+                alert("Please enter a house size.");
+                return;
+            }
+
+            // Prepare the request payload
+            const payload = {
+                size: parseFloat(size)
+            };
+
+            try {
+                // Make a POST request to the FastAPI endpoint
+                const response = await fetch('/predict_price/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get a prediction');
+                }
+
+                // Parse the response
+                const data = await response.json();
+                document.getElementById('result').textContent = `Predicted price for a house of size ${size} sq ft is: $${data.predicted_price.toFixed(2)}`;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'An error occurred while fetching the prediction.';
+            }
+        }
+    </script>
+</body>
+</html>
