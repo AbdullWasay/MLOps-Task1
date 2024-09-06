@@ -1,29 +1,29 @@
-name: Deploy to Vercel
+name: Deploy Application to Vercel
 
 on:
   push:
     branches:
-      - master
+      - main # Changed from master to main (more common branch name)
 
 jobs:
-  deploy:
+  deployment:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository code
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Configure Python environment
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      - name: Install dependencies
+      - name: Install necessary dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Deploy to Vercel
+      - name: Vercel Deployment Step
         uses: amondnet/vercel-action@v22
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}

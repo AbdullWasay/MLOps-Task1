@@ -1,41 +1,41 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sklearn.linear_model import LinearRegression
 import numpy as np
-import pickle
-import os
-from fastapi.staticfiles import StaticFiles
 
+# FastAPI app instance
 app = FastAPI()
 
-# Define the path for the model
-MODEL_PATH = 'model.pkl'
+# Define fixed inflow rate (liters per minute)
+INFLOW_RATE = 10  # liters per minute
 
-# Example dataset and training
-house_sizes = np.array([[600], [800], [1000], [1200], [1400], [1600], [1800], [2000], [2200], [2400]])
-house_prices = np.array([150000, 180000, 210000, 240000, 270000, 300000, 330000, 360000, 390000, 420000])
+# Example dataset: Tank capacities (liters) and time to fill (minutes)
+# Time to fill = capacity / inflow rate
+tank_capacities = np.array([[500], [1000], [1500], [2000], [2500], [3000], [3500], [4000], [4500], [5000]])
+time_to_fill = tank_capacities / INFLOW_RATE
 
-# Load or train model
-if os.path.exists(MODEL_PATH):
-    with open(MODEL_PATH, 'rb') as file:
-        model = pickle.load(file)
-else:
-    model = LinearRegression()
-    model.fit(house_sizes, house_prices)
-    with open(MODEL_PATH, 'wb') as file:
-        pickle.dump(model, file)
+# Train a simple linear regression model
+model = LinearRegression()
+model.fit(tank_capacities, time_to_fill)
 
-class HouseSize(BaseModel):
-    size: float
+# Request model for input validation
+class TankRequest(BaseModel):
+    capacity: float  # Capacity in liters
 
-@app.post("/predict_price/")
-async def predict_price(house_size: HouseSize):
-    try:
-        size = np.array([[house_size.size]])
-        predicted_price = model.predict(size)[0]
-        return {"predicted_price": predicted_price}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+@app.get("/")
+def serve_index():
+    return FileResponse("static/index.html")
 
-# Mount the static files directory
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+# API endpoint to predict time to fill
+@app.post("/predict-time/")
+def predict_fill_time(request: TankRequest):
+    capacity = request.capacity
+    if capacity <= 0:
+        raise HTTPException(status_code=400, detail="Capacity must be a positive value.")
+    
+    # Reshape input for prediction
+    predicted_time = model.predict([[capacity]])[0][0]
+    return {"capacity": capacity, "predicted_time_minutes": predicted_time}
+
+# Start the server (you can run this using `uvicorn <filename>:app --reload`)
